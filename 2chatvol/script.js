@@ -1,7 +1,6 @@
 // --- FIREBASE BAĞLANTISI VE KURULUMU ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-// STORAGE İPTAL EDİLDİ!
 
 // Senin Firebase Bilgilerin
 const firebaseConfig = {
@@ -43,6 +42,7 @@ function selectUser(user) {
     document.body.classList.add(`theme-${user}`);
     chatTitle.innerText = user === 'merve' ? 'Merve (Sen)' : 'Kasım (Sen)';
     
+    // Firebase'deki karşı tarafın mesajlarını okundu yap
     messages.forEach(async (m) => { 
         if (m.sender !== currentUser && !m.isRead) {
             const msgRef = doc(db, "messages", m.id);
@@ -87,6 +87,7 @@ function listenToMessages() {
             data.id = docSnap.id;
             messages.push(data);
             
+            // Eğer ben sohbetteysem anında okundu yap
             if (data.sender !== currentUser && !data.isRead && chatScreen.classList.contains('active')) {
                 updateDoc(docSnap.ref, { isRead: true });
             }
@@ -110,7 +111,7 @@ async function saveAndSendMessage(content, type = 'text') {
     });
 }
 
-// --- MESAJLARI ÇİZME VE SES OYNATICISI ---
+// --- MESAJLARI ÇİZME ---
 function renderMessages() {
     chatBox.innerHTML = ''; 
     
@@ -163,7 +164,7 @@ sendTextBtn.addEventListener('click', () => {
 });
 messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendTextBtn.click(); });
 
-// --- MESAJ İÇİ SES KONTROL FONKSİYONLARI ---
+// --- SES KONTROLLERİ ---
 let currentlyPlayingAudio = null;
 let currentlyPlayingBtn = null;
 
@@ -232,7 +233,7 @@ window.toggleSpeed = function(id) {
     else { audio.playbackRate = 1; speedBtn.innerText = '1x'; speedBtn.style.color = 'var(--text-main)'; }
 }
 
-// --- SES KAYIT, ANİMASYON VE GÜRÜLTÜ ENGELLEME ---
+// --- SES KAYIT ---
 let mediaRecorder;
 let audioChunks = [];
 let audioBlobUrl = null;
@@ -289,7 +290,7 @@ stopRecordBtn.addEventListener('click', () => {
     }
 });
 
-// --- ALT KISIMDAKİ ÖZEL SES ÖNİZLEME PLAYER'I ---
+// --- SES ÖNİZLEME OYNATICI ---
 const audioPlayback = document.getElementById('audio-playback');
 const playPauseBtn = document.getElementById('custom-play-pause-btn');
 const seekBar = document.getElementById('custom-seek-bar');
@@ -330,7 +331,7 @@ function formatTime(seconds) {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-// --- YENİ: SESİ BASE64'E ÇEVİRİP VERİTABANINA YÜKLEME ---
+// --- BASE64 DÖNÜŞTÜRÜCÜ VE GÖNDERİM ---
 const sendAudioBtn = document.getElementById('send-audio-btn');
 const cancelAudioBtn = document.getElementById('cancel-audio-btn');
 
@@ -344,13 +345,10 @@ sendAudioBtn.addEventListener('click', async () => {
             const response = await fetch(audioBlobUrl);
             const blob = await response.blob();
 
-            // Dosyayı Base64 metnine dönüştür
             const reader = new FileReader();
             reader.readAsDataURL(blob);
             reader.onloadend = async () => {
                 const base64Audio = reader.result;
-                
-                // Storage yerine doğrudan Firestore'a kaydediyoruz!
                 await saveAndSendMessage(base64Audio, 'audio');
                 
                 sendAudioBtn.innerText = originalText;
@@ -358,7 +356,7 @@ sendAudioBtn.addEventListener('click', async () => {
                 closeAudioPreview();
             };
         } catch (error) {
-            alert("Ses gönderilirken bir hata oluştu: " + error.message);
+            alert("Ses gönderilirken hata: " + error.message);
             sendAudioBtn.innerText = originalText;
             sendAudioBtn.disabled = false;
         }
