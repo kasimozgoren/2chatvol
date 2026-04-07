@@ -2,14 +2,14 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sohbet Uygulaması</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="login-screen" class="active">
-        <h2>Kim Olarak Giriş Yapacaksın?</h2>
+        <h2>Karakterini Seç</h2>
         <div class="user-select">
             <div class="user-card" onclick="selectUser('merve')">
                 <img src="assets/images/merve.png" alt="Merve" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4140/4140047.png'">
@@ -27,7 +27,7 @@
     <div id="chat-screen">
         <div class="chat-header">
             <h2 id="chat-title">Sohbet</h2>
-            <button onclick="logout()" class="logout-btn">Çıkış Yap</button>
+            <button onclick="logout()" class="logout-btn">Çıkış</button>
         </div>
 
         <div class="chat-box" id="chat-box">
@@ -49,9 +49,9 @@
         <div class="chat-input-area">
             <button id="record-btn" class="mic-btn">🎤</button>
             <button id="stop-record-btn" class="mic-btn recording hidden">⏹️ <span id="recording-time">00:00</span></button>
-            <div id="recording-animation" class="hidden">Kayıt alınıyor... 🔴</div>
+            <div id="recording-animation" class="hidden">Kayıt... 🔴</div>
             
-            <input type="text" id="message-input" placeholder="Bir mesaj yazın...">
+            <input type="text" id="message-input" placeholder="Bir şeyler yaz...">
             <button id="send-text-btn" class="send-btn">Gönder</button>
         </div>
     </div>
