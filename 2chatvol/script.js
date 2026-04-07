@@ -1,8 +1,7 @@
 // --- FIREBASE BAĞLANTISI VE KURULUMU ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// Senin Firebase Bilgilerin
 const firebaseConfig = {
     apiKey: "AIzaSyBRT6OUMjOClZ1mT3G1fOe5C9jy0uj-XBw",
     authDomain: "sohbet0707.firebaseapp.com",
@@ -42,7 +41,6 @@ function selectUser(user) {
     document.body.classList.add(`theme-${user}`);
     chatTitle.innerText = user === 'merve' ? 'Merve (Sen)' : 'Kasım (Sen)';
     
-    // Firebase'deki karşı tarafın mesajlarını okundu yap
     messages.forEach(async (m) => { 
         if (m.sender !== currentUser && !m.isRead) {
             const msgRef = doc(db, "messages", m.id);
@@ -87,7 +85,6 @@ function listenToMessages() {
             data.id = docSnap.id;
             messages.push(data);
             
-            // Eğer ben sohbetteysem anında okundu yap
             if (data.sender !== currentUser && !data.isRead && chatScreen.classList.contains('active')) {
                 updateDoc(docSnap.ref, { isRead: true });
             }
@@ -109,6 +106,17 @@ async function saveAndSendMessage(content, type = 'text') {
         createdAt: Date.now(),
         isRead: false 
     });
+}
+
+// YENİ: Mesaj Silme Fonksiyonu
+window.deleteMessage = async function(id) {
+    if(confirm("Bu mesajı silmek istediğine emin misin?")) {
+        try {
+            await deleteDoc(doc(db, "messages", id));
+        } catch (error) {
+            console.error("Silme hatası:", error);
+        }
+    }
 }
 
 // --- MESAJLARI ÇİZME ---
@@ -140,11 +148,14 @@ function renderMessages() {
             contentHTML = `<div class="text-content">${msg.content}</div>`;
         }
 
+        // YENİ: Çöp Kutusu İkonu (Sadece kendi gönderdiklerinde çıkar)
+        let deleteBtnHTML = isMine ? `<button class="delete-btn" onclick="deleteMessage('${msg.id}')" title="Mesajı Sil">🗑️</button>` : '';
         let ticksHTML = isMine ? (msg.isRead ? '<span class="tick read">✓✓</span>' : '<span class="tick">✓</span>') : '';
 
         msgDiv.innerHTML = `
             ${contentHTML}
             <div class="message-meta">
+                ${deleteBtnHTML}
                 <span>${msg.timestamp}</span>
                 ${ticksHTML}
             </div>
@@ -228,9 +239,9 @@ window.endMsgAudio = function(id) {
 window.toggleSpeed = function(id) {
     const audio = document.getElementById(`audio-${id}`);
     const speedBtn = document.getElementById(`speedBtn-${id}`);
-    if (audio.playbackRate === 1) { audio.playbackRate = 1.5; speedBtn.innerText = '1.5x'; speedBtn.style.color = '#ff9900'; } 
-    else if (audio.playbackRate === 1.5) { audio.playbackRate = 2; speedBtn.innerText = '2x'; speedBtn.style.color = '#ff4d4d'; } 
-    else { audio.playbackRate = 1; speedBtn.innerText = '1x'; speedBtn.style.color = 'var(--text-main)'; }
+    if (audio.playbackRate === 1) { audio.playbackRate = 1.5; speedBtn.innerText = '1.5x'; speedBtn.style.color = '#facc15'; } 
+    else if (audio.playbackRate === 1.5) { audio.playbackRate = 2; speedBtn.innerText = '2x'; speedBtn.style.color = '#ef4444'; } 
+    else { audio.playbackRate = 1; speedBtn.innerText = '1x'; speedBtn.style.color = 'white'; }
 }
 
 // --- SES KAYIT ---
