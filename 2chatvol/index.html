@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sohbet Uygulaması</title>
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="bg-animated"></div>
+
+    <div id="login-screen" class="screen active">
+        <div class="login-container glass-panel">
+            <div class="login-header">
+                <h2>Hoş Geldiniz</h2>
+                <p>Devam etmek için bir profil seçin</p>
+            </div>
+            <div class="profiles">
+                <div class="profile-card" onclick="selectUser('merve')">
+                    <div class="profile-img-wrapper">
+                        <img src="assets/images/merve-profil.jpg" alt="Merve" class="profile-img">
+                        <span id="badge-merve" class="badge hidden">0</span>
+                    </div>
+                    <h3>Merve</h3>
+                </div>
+                <div class="profile-card" onclick="selectUser('kasim')">
+                    <div class="profile-img-wrapper">
+                        <img src="assets/images/kasim-profil.jpg" alt="Kasım" class="profile-img">
+                        <span id="badge-kasim" class="badge hidden">0</span>
+                    </div>
+                    <h3>Kasım</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-screen" class="screen">
+        <div class="chat-container">
+            <header>
+                <button class="icon-btn logout-btn" onclick="logout()">🔙 Çıkış</button>
+                <h2 id="chat-title">Sohbet</h2>
+                <div style="width: 75px;"></div> </header>
+
+            <div id="chat-box">
+                </div>
+
+            <div id="audio-preview-container" class="hidden">
+                <div class="custom-audio-player">
+                    <audio id="audio-playback"></audio>
+                    <button id="custom-play-pause-btn" class="player-control-btn icon-btn" type="button">▶️</button>
+                    <div class="player-display">
+                        <input type="range" id="custom-seek-bar" value="0" step="1">
+                        <div class="time-display"><span id="current-time">00:00</span> / <span id="total-time">00:00</span></div>
+                    </div>
+                </div>
+                <div class="audio-actions">
+                    <button id="send-audio-btn" class="action-btn success">Gönder ➤</button>
+                    <button id="cancel-audio-btn" class="action-btn danger">İptal</button>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="Bir mesaj yaz...">
+                
+                <div id="recording-animation" class="hidden">
+                    <div class="red-dot"></div>
+                    <span class="recording-text">Kaydediliyor... <span id="recording-time">00:00</span></span>
+                    <div class="sound-waves">
+                        <span class="wave"></span>
+                        <span class="wave"></span>
+                        <span class="wave"></span>
+                        <span class="wave"></span>
+                        <span class="wave"></span>
+                    </div>
+                </div>
+
+                <button id="send-text-btn" class="icon-btn send-btn">➤</button>
+                <button id="record-btn" class="icon-btn mic-btn">🎤</button>
+                <button id="stop-record-btn" class="icon-btn stop-btn hidden">⏹️ Durdur</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
