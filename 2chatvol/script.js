@@ -115,7 +115,7 @@ function listenToMessages() {
     });
 }
 
-async function saveAndSendMessage(content, type = 'text') {
+async function saveAndSendMessage(content, type = 'text', duration = 0) {
     const now = new Date();
     const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -123,13 +123,13 @@ async function saveAndSendMessage(content, type = 'text') {
         sender: currentUser,
         type: type,
         content: content,
+        duration: duration, 
         timestamp: timeString,
         createdAt: Date.now(),
         isRead: false 
     });
 }
 
-// MESAJ SİLME FONKSİYONU
 window.deleteMessage = async function(id) {
     if(confirm("Bu mesajı silmek istediğine emin misin?")) {
         try {
@@ -151,16 +151,18 @@ function renderMessages() {
         
         let contentHTML = '';
         if (msg.type === 'audio') {
+            const dur = msg.duration || 0;
+            const maxDur = dur > 0 ? dur : 1; 
+
             contentHTML = `
                 <div class="msg-audio-player">
                     <button class="msg-play-btn" id="playBtn-${msg.id}" onclick="toggleMsgAudio('${msg.id}')">▶️</button>
                     <div class="msg-audio-timeline">
-                        <input type="range" class="msg-seek-bar" id="seekBar-${msg.id}" value="0" step="0.1" oninput="seekMsgAudio('${msg.id}')">
-                        <div class="msg-audio-time" id="time-${msg.id}">00:00</div>
+                        <input type="range" class="msg-seek-bar" id="seekBar-${msg.id}" value="0" step="0.1" max="${maxDur}" oninput="seekMsgAudio('${msg.id}')">
+                        <div class="msg-audio-time" id="time-${msg.id}">${formatTime(dur)}</div>
                     </div>
                     <button class="msg-speed-btn" id="speedBtn-${msg.id}" onclick="toggleSpeed('${msg.id}')">1x</button>
-                    <audio id="audio-${msg.id}" src="${msg.content}" 
-                           onloadedmetadata="initMsgAudio('${msg.id}')" 
+                    <audio id="audio-${msg.id}" src="${msg.content}" data-duration="${dur}"
                            ontimeupdate="updateMsgAudio('${msg.id}')" 
                            onended="endMsgAudio('${msg.id}')"></audio>
                 </div>
@@ -169,7 +171,6 @@ function renderMessages() {
             contentHTML = `<div class="text-content">${msg.content}</div>`;
         }
 
-        // Kırmızı buton olarak eklendi
         let deleteBtnHTML = isMine ? `<button class="delete-btn" onclick="deleteMessage('${msg.id}')">Sil 🗑️</button>` : '';
         let ticksHTML = isMine ? (msg.isRead ? '<span class="tick read">✓✓</span>' : '<span class="tick">✓</span>') : '';
 
@@ -187,28 +188,33 @@ function renderMessages() {
     chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); 
 }
 
+// --- KLAVYE KAPANMAMA DÜZELTMESİ (YENİ) ---
 const messageInput = document.getElementById('message-input');
 const sendTextBtn = document.getElementById('send-text-btn');
 
+// Gönder butonuna tıklandığında yazı kutusunun "focus" (odak) kaybetmesini engelliyoruz
+sendTextBtn.addEventListener('mousedown', (e) => e.preventDefault());
+sendTextBtn.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+
 sendTextBtn.addEventListener('click', () => {
     const text = messageInput.value.trim();
-    if (text) { saveAndSendMessage(text, 'text'); messageInput.value = ''; }
+    if (text) { 
+        saveAndSendMessage(text, 'text', 0); 
+        messageInput.value = ''; 
+        messageInput.focus(); // Gönderdikten sonra imleci zorla tekrar kutuya koy
+    }
 });
-messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendTextBtn.click(); });
+
+messageInput.addEventListener('keypress', (e) => { 
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Enter tuşunun klavyeyi kapatmasını engelliyoruz
+        sendTextBtn.click(); 
+    }
+});
 
 // --- SES KONTROLLERİ ---
 let currentlyPlayingAudio = null;
 let currentlyPlayingBtn = null;
-
-window.initMsgAudio = function(id) {
-    const audio = document.getElementById(`audio-${id}`);
-    const timeDisplay = document.getElementById(`time-${id}`);
-    const seekBar = document.getElementById(`seekBar-${id}`);
-    if(audio.duration !== Infinity && !isNaN(audio.duration)) {
-        seekBar.max = audio.duration;
-        timeDisplay.innerText = formatTime(audio.duration);
-    }
-}
 
 window.toggleMsgAudio = function(id) {
     const audio = document.getElementById(`audio-${id}`);
@@ -250,9 +256,14 @@ window.seekMsgAudio = function(id) {
 window.endMsgAudio = function(id) {
     const playBtn = document.getElementById(`playBtn-${id}`);
     const audio = document.getElementById(`audio-${id}`);
+    const timeDisplay = document.getElementById(`time-${id}`);
+    const dur = audio.getAttribute('data-duration'); 
+
     playBtn.innerText = '▶️';
     audio.currentTime = 0;
     document.getElementById(`seekBar-${id}`).value = 0;
+    if(timeDisplay) timeDisplay.innerText = formatTime(dur);
+    
     currentlyPlayingAudio = null;
     currentlyPlayingBtn = null;
 }
@@ -271,6 +282,7 @@ let audioChunks = [];
 let audioBlobUrl = null;
 let recordingInterval;
 let recordingSeconds = 0;
+let finalAudioDuration = 0; 
 
 const recordBtn = document.getElementById('record-btn');
 const stopRecordBtn = document.getElementById('stop-record-btn');
@@ -301,6 +313,7 @@ recordBtn.addEventListener('click', async () => {
         recordingAnimation.classList.remove('hidden');
 
         recordingSeconds = 0;
+        finalAudioDuration = 0;
         recordingTimeDisplay.innerText = "00:00";
         recordingInterval = setInterval(() => {
             recordingSeconds++;
@@ -314,6 +327,9 @@ stopRecordBtn.addEventListener('click', () => {
         mediaRecorder.stop();
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
         clearInterval(recordingInterval);
+        
+        finalAudioDuration = recordingSeconds; 
+        
         recordingAnimation.classList.add('hidden');
         stopRecordBtn.classList.add('hidden');
         recordBtn.classList.remove('hidden');
@@ -332,21 +348,22 @@ const totalTimeDisplay = document.getElementById('total-time');
 function prepareCustomPlayer(src) {
     audioPlayback.src = src;
     seekBar.value = 0;
+    seekBar.max = finalAudioDuration > 0 ? finalAudioDuration : 1;
     playPauseBtn.innerText = '▶️';
     currentTimeDisplay.innerText = '00:00';
-    totalTimeDisplay.innerText = '00:00';
-
-    audioPlayback.onloadedmetadata = () => {
-        totalTimeDisplay.innerText = formatTime(audioPlayback.duration);
-        seekBar.max = Math.floor(audioPlayback.duration);
-    };
+    totalTimeDisplay.innerText = formatTime(finalAudioDuration);
 
     audioPlayback.ontimeupdate = () => {
         seekBar.value = audioPlayback.currentTime;
         currentTimeDisplay.innerText = formatTime(audioPlayback.currentTime);
     };
 
-    audioPlayback.onended = () => { playPauseBtn.innerText = '▶️'; audioPlayback.currentTime = 0; };
+    audioPlayback.onended = () => { 
+        playPauseBtn.innerText = '▶️'; 
+        audioPlayback.currentTime = 0; 
+        seekBar.value = 0;
+        currentTimeDisplay.innerText = '00:00';
+    };
 }
 
 playPauseBtn.addEventListener('click', () => {
@@ -381,7 +398,8 @@ sendAudioBtn.addEventListener('click', async () => {
             reader.readAsDataURL(blob);
             reader.onloadend = async () => {
                 const base64Audio = reader.result;
-                await saveAndSendMessage(base64Audio, 'audio');
+                
+                await saveAndSendMessage(base64Audio, 'audio', finalAudioDuration);
                 
                 sendAudioBtn.innerText = originalText;
                 sendAudioBtn.disabled = false;
