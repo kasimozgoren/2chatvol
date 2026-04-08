@@ -28,7 +28,7 @@ const chatScreen = document.getElementById('chat-screen');
 const chatTitle = document.getElementById('chat-title');
 const chatBox = document.getElementById('chat-box');
 
-// ŞİFRE KONTROLÜ
+// --- ŞİFRE KONTROLÜ ---
 passwordBtn.addEventListener('click', () => {
     if(passwordInput.value === 'essek') {
         passwordScreen.classList.remove('active');
@@ -130,6 +130,7 @@ async function saveAndSendMessage(content, type = 'text', duration = 0) {
     });
 }
 
+// --- MESAJ SİLME FONKSİYONU ---
 window.deleteMessage = async function(id) {
     if(confirm("Bu mesajı silmek istediğine emin misin?")) {
         try {
@@ -188,27 +189,34 @@ function renderMessages() {
     chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); 
 }
 
-// --- KLAVYE KAPANMAMA DÜZELTMESİ (YENİ) ---
+// --- KLAVYE VE GÖNDERME İŞLEMLERİ (DÜZELTİLMİŞ) ---
 const messageInput = document.getElementById('message-input');
 const sendTextBtn = document.getElementById('send-text-btn');
 
-// Gönder butonuna tıklandığında yazı kutusunun "focus" (odak) kaybetmesini engelliyoruz
-sendTextBtn.addEventListener('mousedown', (e) => e.preventDefault());
-sendTextBtn.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
-
-sendTextBtn.addEventListener('click', () => {
+function sendMessageAction() {
     const text = messageInput.value.trim();
     if (text) { 
         saveAndSendMessage(text, 'text', 0); 
         messageInput.value = ''; 
-        messageInput.focus(); // Gönderdikten sonra imleci zorla tekrar kutuya koy
     }
+    // Gönderdikten sonra imleci zorla içeride tutup klavyenin kapanmasını engelliyoruz
+    messageInput.focus(); 
+}
+
+sendTextBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    sendMessageAction();
+});
+
+sendTextBtn.addEventListener('touchend', (e) => {
+    e.preventDefault(); // Tarayıcının butona dokunulduğunda klavyeyi indirme huyunu iptal eder
+    sendMessageAction();
 });
 
 messageInput.addEventListener('keypress', (e) => { 
     if (e.key === 'Enter') {
-        e.preventDefault(); // Enter tuşunun klavyeyi kapatmasını engelliyoruz
-        sendTextBtn.click(); 
+        e.preventDefault(); // Enter'ın varsayılan boşluk bırakma/kapatma huyunu iptal eder
+        sendMessageAction(); 
     }
 });
 
