@@ -8,16 +8,22 @@
 </head>
 <body>
 
-    <div id="login-screen" class="active">
+    <div id="password-screen" class="active">
+        <h2>Sisteme Giriş</h2>
+        <input type="password" id="password-input" placeholder="Şifreyi girin">
+        <button id="password-btn" class="send-btn" style="margin-top: 15px; width: 100%;">Giriş Yap</button>
+    </div>
+
+    <div id="login-screen">
         <h2>Karakterini Seç</h2>
         <div class="user-select">
             <div class="user-card" onclick="selectUser('merve')">
-                <img src="assets/images/merve.png" alt="Merve" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4140/4140047.png'">
+                <img src="assets/images/merve.jpg" alt="Merve" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4140/4140047.png'">
                 <h3>Merve</h3>
                 <span id="badge-merve" class="badge hidden">0</span>
             </div>
             <div class="user-card" onclick="selectUser('kasim')">
-                <img src="assets/images/kasim.png" alt="Kasım" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4140/4140048.png'">
+                <img src="assets/images/kasim.jpg" alt="Kasım" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4140/4140048.png'">
                 <h3>Kasım</h3>
                 <span id="badge-kasim" class="badge hidden">0</span>
             </div>
