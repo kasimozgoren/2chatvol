@@ -19,10 +19,31 @@ let messages = [];
 let currentUser = '';
 let unsubscribeMessages = null;
 
+const passwordScreen = document.getElementById('password-screen');
+const passwordInput = document.getElementById('password-input');
+const passwordBtn = document.getElementById('password-btn');
+
 const loginScreen = document.getElementById('login-screen');
 const chatScreen = document.getElementById('chat-screen');
 const chatTitle = document.getElementById('chat-title');
 const chatBox = document.getElementById('chat-box');
+
+// ŞİFRE KONTROLÜ
+passwordBtn.addEventListener('click', () => {
+    if(passwordInput.value === 'essek') {
+        passwordScreen.classList.remove('active');
+        setTimeout(() => {
+            passwordScreen.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            setTimeout(() => loginScreen.classList.add('active'), 50);
+        }, 350);
+    } else {
+        alert('Hatalı şifre!');
+        passwordInput.value = '';
+    }
+});
+passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') passwordBtn.click(); });
+
 
 function updateBadges() {
     let merveUnread = messages.filter(m => m.sender === 'kasim' && !m.isRead).length;
@@ -108,7 +129,7 @@ async function saveAndSendMessage(content, type = 'text') {
     });
 }
 
-// YENİ: Mesaj Silme Fonksiyonu
+// MESAJ SİLME FONKSİYONU
 window.deleteMessage = async function(id) {
     if(confirm("Bu mesajı silmek istediğine emin misin?")) {
         try {
@@ -148,8 +169,8 @@ function renderMessages() {
             contentHTML = `<div class="text-content">${msg.content}</div>`;
         }
 
-        // YENİ: Çöp Kutusu İkonu (Sadece kendi gönderdiklerinde çıkar)
-        let deleteBtnHTML = isMine ? `<button class="delete-btn" onclick="deleteMessage('${msg.id}')" title="Mesajı Sil">🗑️</button>` : '';
+        // Kırmızı buton olarak eklendi
+        let deleteBtnHTML = isMine ? `<button class="delete-btn" onclick="deleteMessage('${msg.id}')">Sil 🗑️</button>` : '';
         let ticksHTML = isMine ? (msg.isRead ? '<span class="tick read">✓✓</span>' : '<span class="tick">✓</span>') : '';
 
         msgDiv.innerHTML = `
