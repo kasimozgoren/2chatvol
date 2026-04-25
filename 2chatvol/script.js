@@ -30,7 +30,7 @@ const chatBox = document.getElementById('chat-box');
 
 // --- ŞİFRE KONTROLÜ ---
 passwordBtn.addEventListener('click', () => {
-    if(passwordInput.value === 'essek') {
+    if(passwordInput.value === 'essekkk') {
         passwordScreen.classList.remove('active');
         setTimeout(() => {
             passwordScreen.style.display = 'none';
